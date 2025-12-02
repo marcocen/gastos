@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Gastos</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>💰 Control de Gastos</h1>
+            <div class="balance-summary">
+                <div class="total-card">
+                    <span class="label">Total del Mes</span>
+                    <span class="amount" id="totalAmount">$0.00</span>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <section class="quick-entry">
+                <h2>Agregar Gasto</h2>
+                <form id="expenseForm">
+                    <div class="form-row">
+                        <div class="form-group form-group-amount">
+                            <label for="amount">Monto</label>
+                            <input 
+                                type="number" 
+                                id="amount" 
+                                name="amount" 
+                                step="0.01" 
+                                min="0" 
+                                placeholder="0.00" 
+                                required 
+                                autofocus
+                            >
+                        </div>
+                        <div class="form-group form-group-category">
+                            <label for="category">Categoría</label>
+                            <select id="category" name="category" required>
+                                <option value="">Seleccionar...</option>
+                                <option value="comida">🍔 Comida</option>
+                                <option value="transporte">🚗 Transporte</option>
+                                <option value="servicios">💡 Servicios</option>
+                                <option value="entretenimiento">🎬 Entretenimiento</option>
+                                <option value="salud">⚕️ Salud</option>
+                                <option value="educacion">📚 Educación</option>
+                                <option value="compras">🛍️ Compras</option>
+                                <option value="hogar">🏠 Hogar</option>
+                                <option value="otros">📌 Otros</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group form-group-description">
+                            <label for="description">Descripción</label>
+                            <input 
+                                type="text" 
+                                id="description" 
+                                name="description" 
+                                placeholder="Ej: Almuerzo, Uber, Netflix..." 
+                                maxlength="100"
+                            >
+                        </div>
+                        <div class="form-group form-group-date">
+                            <label for="date">Fecha</label>
+                            <input 
+                                type="date" 
+                                id="date" 
+                                name="date" 
+                                required
+                            >
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary">
+                        <span class="btn-text">Agregar Gasto</span>
+                        <span class="btn-shortcut">Enter ↵</span>
+                    </button>
+                </form>
+            </section>
+
+            <section class="expenses-list">
+                <div class="list-header">
+                    <h2>Gastos Recientes</h2>
+                    <div class="list-actions">
+                        <button id="clearAll" class="btn-secondary">Limpiar Todo</button>
+                    </div>
+                </div>
+
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-filter="all">Todos</button>
+                    <button class="filter-tab" data-filter="today">Hoy</button>
+                    <button class="filter-tab" data-filter="week">Esta Semana</button>
+                    <button class="filter-tab" data-filter="month">Este Mes</button>
+                </div>
+
+                <div id="expensesList" class="expenses-container">
+                    <div class="empty-state">
+                        <p>📝 No hay gastos registrados</p>
+                        <p class="empty-state-hint">Agrega tu primer gasto arriba</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Los datos se guardan localmente en tu navegador</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
