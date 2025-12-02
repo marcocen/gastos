@@ -4,8 +4,9 @@ Aplicación web para el control personal de gastos, con diseño responsive optim
 
 ## ✨ Características
 
-### Versión Actual (v1.0)
+### Versión Actual (v2.0)
 
+#### Funcionalidad Básica
 - **Ingreso rápido de gastos** con mínima fricción
 - **Categorías predefinidas** con iconos visuales:
   - 🍔 Comida
@@ -26,6 +27,28 @@ Aplicación web para el control personal de gastos, con diseño responsive optim
 - **Interfaz moderna** con modo oscuro automático
 - **Accesos rápidos por teclado** (desktop)
 
+#### 💳 Gestión de Tarjetas de Crédito
+- **Crear y gestionar tarjetas**: Agrega múltiples tarjetas con nombre y día de cierre
+- **Tarjeta por defecto**: Selecciona una tarjeta para asociar automáticamente los gastos
+- **Información visible**: Los gastos muestran la tarjeta asociada con badge visual
+- **Eliminar tarjetas**: Elimina tarjetas sin afectar los gastos ya registrados
+
+#### 📊 Pagos en Cuotas
+- **Cuotas automáticas**: Ingresa un gasto en N cuotas y se crean N gastos automáticamente
+- **Distribución inteligente**: 
+  - Primera cuota: Fecha actual
+  - Cuotas siguientes: Día siguiente al cierre de la tarjeta en cada mes
+- **Monto prorrateado**: El costo total se divide automáticamente entre las cuotas
+- **Visualización clara**: Cada cuota muestra su número (ej: "Cuota 2/6")
+
+#### 🔍 Filtros Avanzados
+- **Filtros temporales**: Todos, Hoy, Esta Semana, Este Mes
+- **Filtros por tarjeta**: 
+  - Ver todos los gastos
+  - Ver gastos sin tarjeta
+  - Ver gastos de una tarjeta específica
+- **Filtros combinados**: Aplica filtros de tiempo y tarjeta simultáneamente
+
 ## 🚀 Uso
 
 ### Abrir la aplicación
@@ -36,31 +59,56 @@ Simplemente abre el archivo `index.html` en tu navegador web preferido. No requi
 **Opción 2: GitHub Pages**
 Si has desplegado la aplicación en GitHub Pages, accede a través de la URL: `https://[tu-usuario].github.io/[nombre-repositorio]`
 
+### Gestionar tarjetas de crédito
+
+1. Haz clic en el botón "💳 Gestionar Tarjetas" en la parte superior
+2. En el modal, completa:
+   - **Nombre de la Tarjeta**: ej. "Visa Gold", "Mastercard"
+   - **Día de Cierre**: Día del mes (1-31) cuando cierra la tarjeta
+   - **Tarjeta por defecto**: (Opcional) Marca para asociar automáticamente los gastos
+3. Haz clic en "Agregar Tarjeta"
+4. Gestiona tus tarjetas:
+   - ⭐ Establecer como predeterminada
+   - 🗑️ Eliminar tarjeta
+
 ### Agregar un gasto
 
 1. Ingresa el monto
 2. Selecciona una categoría
 3. (Opcional) Agrega una descripción
 4. La fecha se establece automáticamente al día actual, pero puedes editarla
-5. Presiona Enter o haz clic en "Agregar Gasto"
+5. **Tarjeta**: Selecciona una tarjeta de crédito o deja "Sin tarjeta"
+6. **Cuotas**: Ingresa el número de cuotas (1 para pago único)
+7. Presiona Enter o haz clic en "Agregar Gasto"
+
+**Nota sobre cuotas**: Las cuotas solo funcionan con tarjetas de crédito. Si seleccionas más de 1 cuota sin tarjeta, se creará un único gasto con el monto dividido.
 
 ### Filtrar gastos
 
-Usa las pestañas de filtro para ver:
+**Filtros temporales** - Usa las pestañas superiores:
 - **Todos**: Todos los gastos registrados
 - **Hoy**: Gastos de hoy
 - **Esta Semana**: Gastos de esta semana
 - **Este Mes**: Gastos del mes actual
 
+**Filtros por tarjeta** - Usa las pestañas de tarjetas (aparecen cuando tienes tarjetas registradas):
+- **Todos**: Todos los gastos (con y sin tarjeta)
+- **Sin tarjeta**: Solo gastos que no están asociados a ninguna tarjeta
+- **[Nombre de tarjeta]**: Gastos de esa tarjeta específica
+
+Los filtros se pueden combinar para ver, por ejemplo, "gastos del mes actual de una tarjeta específica".
+
 ### Eliminar gastos
 
 - Haz clic en el ícono 🗑️ de cualquier gasto para eliminarlo
 - Usa "Limpiar Todo" para eliminar todos los gastos
+- **Nota**: Eliminar una cuota no elimina las demás cuotas del mismo gasto
 
 ### Atajos de teclado (Desktop)
 
 - `Alt/Option + N`: Enfocar campo de monto para agregar nuevo gasto
 - `Enter`: Enviar formulario
+- `Escape`: Cerrar modal de tarjetas
 
 ## 📱 Compatibilidad
 
@@ -99,19 +147,20 @@ La aplicación detecta automáticamente la preferencia de modo oscuro del sistem
 
 ## 🔮 Roadmap (Futuras Iteraciones)
 
-### v2.0 - Tarjetas de Crédito y Cuotas
-- Gestión de tarjetas de crédito
-- Gastos en cuotas
-- División automática de costos en meses subsiguientes
-- Visualización de gastos "virtuales" por cuotas pendientes
+### v3.0 - Análisis y Reportes
+- Gráficos de gastos por categoría
+- Estadísticas mensuales y anuales
+- Comparación entre períodos
+- Tendencias de gasto
 
 ### Otras mejoras planificadas
 - Exportar datos (CSV, JSON)
-- Gráficos y estadísticas
-- Presupuestos por categoría
-- Búsqueda de gastos
+- Presupuestos por categoría con alertas
+- Búsqueda avanzada de gastos
 - Edición de gastos existentes
 - Backup/restore en la nube (opcional)
+- Eliminar grupo completo de cuotas
+- Notificaciones de vencimiento de tarjetas
 
 ## 🛠️ Tecnologías
 

@@ -1,10 +1,13 @@
 class ExpenseTracker {
     constructor() {
         this.expenses = this.loadExpenses();
+        this.creditCards = this.loadCreditCards();
         this.currentFilter = 'all';
+        this.currentCardFilter = 'all';
         this.initializeElements();
         this.attachEventListeners();
         this.setDefaultDate();
+        this.updateCreditCardSelect();
         this.render();
     }
 
@@ -14,10 +17,21 @@ class ExpenseTracker {
         this.categorySelect = document.getElementById('category');
         this.descriptionInput = document.getElementById('description');
         this.dateInput = document.getElementById('date');
+        this.creditCardSelect = document.getElementById('creditCard');
+        this.installmentsInput = document.getElementById('installments');
         this.expensesList = document.getElementById('expensesList');
         this.totalAmount = document.getElementById('totalAmount');
         this.clearAllButton = document.getElementById('clearAll');
         this.filterTabs = document.querySelectorAll('.filter-tab');
+        this.cardFilterTabs = document.getElementById('cardFilterTabs');
+        this.manageCreditCardsButton = document.getElementById('manageCreditCards');
+        this.creditCardsModal = document.getElementById('creditCardsModal');
+        this.closeModalButton = document.getElementById('closeModal');
+        this.creditCardForm = document.getElementById('creditCardForm');
+        this.cardsContainer = document.getElementById('cardsContainer');
+        this.cardNameInput = document.getElementById('cardName');
+        this.closingDayInput = document.getElementById('closingDay');
+        this.isDefaultCheckbox = document.getElementById('isDefault');
     }
 
     attachEventListeners() {
@@ -27,6 +41,16 @@ class ExpenseTracker {
         this.filterTabs.forEach(tab => {
             tab.addEventListener('click', (e) => this.handleFilterChange(e));
         });
+
+        this.manageCreditCardsButton.addEventListener('click', () => this.openCreditCardsModal());
+        this.closeModalButton.addEventListener('click', () => this.closeCreditCardsModal());
+        this.creditCardsModal.addEventListener('click', (e) => {
+            if (e.target === this.creditCardsModal) {
+                this.closeCreditCardsModal();
+            }
+        });
+
+        this.creditCardForm.addEventListener('submit', (e) => this.handleCreditCardSubmit(e));
     }
 
     setDefaultDate() {
@@ -37,19 +61,83 @@ class ExpenseTracker {
     handleSubmit(e) {
         e.preventDefault();
         
-        const expense = {
-            id: Date.now(),
-            amount: parseFloat(this.amountInput.value),
-            category: this.categorySelect.value,
-            description: this.descriptionInput.value || this.getCategoryLabel(this.categorySelect.value),
-            date: this.dateInput.value,
-            createdAt: new Date().toISOString()
-        };
+        const amount = parseFloat(this.amountInput.value);
+        const category = this.categorySelect.value;
+        const description = this.descriptionInput.value || this.getCategoryLabel(this.categorySelect.value);
+        const date = this.dateInput.value;
+        const cardId = this.creditCardSelect.value || null;
+        const installments = parseInt(this.installmentsInput.value) || 1;
 
-        this.expenses.unshift(expense);
+        if (installments > 1 && cardId) {
+            this.createInstallmentExpenses(amount, category, description, date, cardId, installments);
+        } else {
+            const expense = {
+                id: Date.now(),
+                amount: installments > 1 ? amount / installments : amount,
+                category: category,
+                description: description,
+                date: date,
+                cardId: cardId,
+                createdAt: new Date().toISOString(),
+                installmentInfo: installments > 1 ? {
+                    total: installments,
+                    current: 1,
+                    parentId: Date.now()
+                } : null
+            };
+
+            this.expenses.unshift(expense);
+        }
+
         this.saveExpenses();
         this.render();
         this.resetForm();
+    }
+
+    createInstallmentExpenses(totalAmount, category, description, date, cardId, totalInstallments) {
+        const installmentAmount = totalAmount / totalInstallments;
+        const parentId = Date.now();
+        const card = this.creditCards.find(c => c.id === cardId);
+        
+        if (!card) return;
+
+        const firstDate = new Date(date);
+        
+        for (let i = 0; i < totalInstallments; i++) {
+            let expenseDate;
+            
+            if (i === 0) {
+                expenseDate = date;
+            } else {
+                const monthsToAdd = i;
+                const targetDate = new Date(firstDate);
+                targetDate.setMonth(targetDate.getMonth() + monthsToAdd);
+                
+                const closingDay = Math.min(card.closingDay + 1, this.getDaysInMonth(targetDate.getFullYear(), targetDate.getMonth() + 1));
+                expenseDate = new Date(targetDate.getFullYear(), targetDate.getMonth(), closingDay).toISOString().split('T')[0];
+            }
+
+            const expense = {
+                id: parentId + i,
+                amount: installmentAmount,
+                category: category,
+                description: `${description} (${i + 1}/${totalInstallments})`,
+                date: expenseDate,
+                cardId: cardId,
+                createdAt: new Date().toISOString(),
+                installmentInfo: {
+                    total: totalInstallments,
+                    current: i + 1,
+                    parentId: parentId
+                }
+            };
+
+            this.expenses.unshift(expense);
+        }
+    }
+
+    getDaysInMonth(year, month) {
+        return new Date(year, month, 0).getDate();
     }
 
     getCategoryLabel(category) {
@@ -85,6 +173,8 @@ class ExpenseTracker {
     resetForm() {
         this.form.reset();
         this.setDefaultDate();
+        this.updateCreditCardSelect();
+        this.installmentsInput.value = 1;
         this.amountInput.focus();
     }
 
@@ -92,6 +182,14 @@ class ExpenseTracker {
         this.filterTabs.forEach(tab => tab.classList.remove('active'));
         e.target.classList.add('active');
         this.currentFilter = e.target.dataset.filter;
+        this.render();
+    }
+
+    handleCardFilterChange(e) {
+        const cardTabs = document.querySelectorAll('.card-filter-tab');
+        cardTabs.forEach(tab => tab.classList.remove('active'));
+        e.target.classList.add('active');
+        this.currentCardFilter = e.target.dataset.card;
         this.render();
     }
 
@@ -105,15 +203,29 @@ class ExpenseTracker {
         return this.expenses.filter(expense => {
             const expenseDate = new Date(expense.date);
             
+            let timeFilterPassed = false;
             switch(this.currentFilter) {
                 case 'today':
-                    return expenseDate >= today;
+                    timeFilterPassed = expenseDate >= today;
+                    break;
                 case 'week':
-                    return expenseDate >= thisWeekStart;
+                    timeFilterPassed = expenseDate >= thisWeekStart;
+                    break;
                 case 'month':
-                    return expenseDate >= thisMonthStart;
+                    timeFilterPassed = expenseDate >= thisMonthStart;
+                    break;
                 default:
-                    return true;
+                    timeFilterPassed = true;
+            }
+
+            if (!timeFilterPassed) return false;
+
+            if (this.currentCardFilter === 'all') {
+                return true;
+            } else if (this.currentCardFilter === 'none') {
+                return !expense.cardId;
+            } else {
+                return expense.cardId === this.currentCardFilter;
             }
         });
     }
@@ -170,11 +282,41 @@ class ExpenseTracker {
     render() {
         this.renderTotal();
         this.renderExpenses();
+        this.renderCardFilters();
     }
 
     renderTotal() {
         const total = this.calculateTotal();
         this.totalAmount.textContent = this.formatCurrency(total);
+    }
+
+    renderCardFilters() {
+        if (this.creditCards.length === 0) {
+            this.cardFilterTabs.style.display = 'none';
+            return;
+        }
+
+        this.cardFilterTabs.style.display = 'flex';
+
+        let html = '<button class="card-filter-tab active" data-card="all">Todos</button>';
+        html += '<button class="card-filter-tab" data-card="none">Sin tarjeta</button>';
+        
+        this.creditCards.forEach(card => {
+            html += `<button class="card-filter-tab" data-card="${card.id}">${card.name}</button>`;
+        });
+
+        this.cardFilterTabs.innerHTML = html;
+
+        const cardTabs = document.querySelectorAll('.card-filter-tab');
+        cardTabs.forEach(tab => {
+            tab.addEventListener('click', (e) => this.handleCardFilterChange(e));
+        });
+
+        const activeCard = this.cardFilterTabs.querySelector(`[data-card="${this.currentCardFilter}"]`);
+        if (activeCard) {
+            cardTabs.forEach(tab => tab.classList.remove('active'));
+            activeCard.classList.add('active');
+        }
     }
 
     renderExpenses() {
@@ -194,26 +336,38 @@ class ExpenseTracker {
             return;
         }
 
-        this.expensesList.innerHTML = filtered.map(expense => `
-            <div class="expense-item">
-                <div class="expense-icon">
-                    ${this.getCategoryIcon(expense.category)}
+        this.expensesList.innerHTML = filtered.map(expense => {
+            const card = expense.cardId ? this.creditCards.find(c => c.id === expense.cardId) : null;
+            const cardInfo = card ? `<span class="expense-card">💳 ${card.name}</span>` : '';
+            const installmentInfo = expense.installmentInfo 
+                ? `<span class="expense-installment">Cuota ${expense.installmentInfo.current}/${expense.installmentInfo.total}</span>` 
+                : '';
+
+            return `
+                <div class="expense-item">
+                    <div class="expense-icon">
+                        ${this.getCategoryIcon(expense.category)}
+                    </div>
+                    <div class="expense-details">
+                        <div class="expense-category">${this.getCategoryLabel(expense.category)}</div>
+                        <div class="expense-description">${this.escapeHtml(expense.description)}</div>
+                        <div class="expense-meta">
+                            <span class="expense-date">${this.formatDate(expense.date)}</span>
+                            ${cardInfo}
+                            ${installmentInfo}
+                        </div>
+                    </div>
+                    <div class="expense-amount">
+                        ${this.formatCurrency(expense.amount)}
+                    </div>
+                    <div class="expense-actions">
+                        <button class="btn-icon delete" onclick="tracker.deleteExpense(${expense.id})" title="Eliminar">
+                            🗑️
+                        </button>
+                    </div>
                 </div>
-                <div class="expense-details">
-                    <div class="expense-category">${this.getCategoryLabel(expense.category)}</div>
-                    <div class="expense-description">${this.escapeHtml(expense.description)}</div>
-                    <div class="expense-date">${this.formatDate(expense.date)}</div>
-                </div>
-                <div class="expense-amount">
-                    ${this.formatCurrency(expense.amount)}
-                </div>
-                <div class="expense-actions">
-                    <button class="btn-icon delete" onclick="tracker.deleteExpense(${expense.id})" title="Eliminar">
-                        🗑️
-                    </button>
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     escapeHtml(text) {
@@ -240,6 +394,120 @@ class ExpenseTracker {
             alert('No se pudieron guardar los datos. El almacenamiento local podría estar lleno.');
         }
     }
+
+    loadCreditCards() {
+        try {
+            const data = localStorage.getItem('creditCards');
+            return data ? JSON.parse(data) : [];
+        } catch (error) {
+            console.error('Error loading credit cards:', error);
+            return [];
+        }
+    }
+
+    saveCreditCards() {
+        try {
+            localStorage.setItem('creditCards', JSON.stringify(this.creditCards));
+        } catch (error) {
+            console.error('Error saving credit cards:', error);
+            alert('No se pudieron guardar las tarjetas.');
+        }
+    }
+
+    openCreditCardsModal() {
+        this.creditCardsModal.style.display = 'flex';
+        this.renderCreditCards();
+    }
+
+    closeCreditCardsModal() {
+        this.creditCardsModal.style.display = 'none';
+        this.creditCardForm.reset();
+    }
+
+    handleCreditCardSubmit(e) {
+        e.preventDefault();
+
+        const name = this.cardNameInput.value.trim();
+        const closingDay = parseInt(this.closingDayInput.value);
+        const isDefault = this.isDefaultCheckbox.checked;
+
+        if (closingDay < 1 || closingDay > 31) {
+            alert('El día de cierre debe estar entre 1 y 31');
+            return;
+        }
+
+        if (isDefault) {
+            this.creditCards.forEach(card => card.isDefault = false);
+        }
+
+        const card = {
+            id: Date.now().toString(),
+            name: name,
+            closingDay: closingDay,
+            isDefault: isDefault
+        };
+
+        this.creditCards.push(card);
+        this.saveCreditCards();
+        this.creditCardForm.reset();
+        this.renderCreditCards();
+        this.updateCreditCardSelect();
+        this.render();
+    }
+
+    renderCreditCards() {
+        if (this.creditCards.length === 0) {
+            this.cardsContainer.innerHTML = '<p class="empty-cards">No hay tarjetas registradas</p>';
+            return;
+        }
+
+        this.cardsContainer.innerHTML = this.creditCards.map(card => `
+            <div class="card-item">
+                <div class="card-info">
+                    <div class="card-name">
+                        ${this.escapeHtml(card.name)}
+                        ${card.isDefault ? '<span class="card-badge">Por defecto</span>' : ''}
+                    </div>
+                    <div class="card-closing">Cierre día ${card.closingDay}</div>
+                </div>
+                <div class="card-actions">
+                    ${!card.isDefault ? `<button class="btn-card-action" onclick="tracker.setDefaultCard('${card.id}')" title="Establecer por defecto">⭐</button>` : ''}
+                    <button class="btn-card-action delete" onclick="tracker.deleteCreditCard('${card.id}')" title="Eliminar">🗑️</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    updateCreditCardSelect() {
+        const selectedValue = this.creditCardSelect.value;
+        
+        let html = '<option value="">Sin tarjeta</option>';
+        this.creditCards.forEach(card => {
+            const selected = card.isDefault && !selectedValue ? 'selected' : '';
+            html += `<option value="${card.id}" ${selected}>${card.name}</option>`;
+        });
+
+        this.creditCardSelect.innerHTML = html;
+    }
+
+    setDefaultCard(cardId) {
+        this.creditCards.forEach(card => {
+            card.isDefault = card.id === cardId;
+        });
+        this.saveCreditCards();
+        this.renderCreditCards();
+        this.updateCreditCardSelect();
+    }
+
+    deleteCreditCard(cardId) {
+        if (confirm('¿Estás seguro de eliminar esta tarjeta? Los gastos asociados no se eliminarán.')) {
+            this.creditCards = this.creditCards.filter(card => card.id !== cardId);
+            this.saveCreditCards();
+            this.renderCreditCards();
+            this.updateCreditCardSelect();
+            this.render();
+        }
+    }
 }
 
 // Initialize the app when DOM is ready
@@ -259,5 +527,13 @@ document.addEventListener('keydown', (e) => {
     if ((e.altKey || e.metaKey) && e.key === 'n') {
         e.preventDefault();
         document.getElementById('amount').focus();
+    }
+
+    // Escape: Close modal
+    if (e.key === 'Escape') {
+        const modal = document.getElementById('creditCardsModal');
+        if (modal && modal.style.display === 'flex') {
+            tracker.closeCreditCardsModal();
+        }
     }
 });
