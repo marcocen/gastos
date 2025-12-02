@@ -30,7 +30,11 @@ Aplicación web para el control personal de gastos, con diseño responsive optim
 
 ### Abrir la aplicación
 
+**Opción 1: Local**
 Simplemente abre el archivo `index.html` en tu navegador web preferido. No requiere instalación ni servidor.
+
+**Opción 2: GitHub Pages**
+Si has desplegado la aplicación en GitHub Pages, accede a través de la URL: `https://[tu-usuario].github.io/[nombre-repositorio]`
 
 ### Agregar un gasto
 
@@ -115,6 +119,36 @@ La aplicación detecta automáticamente la preferencia de modo oscuro del sistem
 - **CSS3**: Diseño responsive con CSS Grid y Flexbox
 - **JavaScript (Vanilla)**: Sin frameworks, máxima performance
 - **LocalStorage API**: Persistencia de datos
+
+## 🌐 Despliegue en GitHub Pages
+
+Este proyecto está configurado para desplegarse automáticamente en GitHub Pages.
+
+### Configuración inicial
+
+1. Ve a la configuración de tu repositorio en GitHub: `Settings > Pages`
+2. En la sección **Build and deployment**:
+   - **Source**: Selecciona "GitHub Actions"
+3. Guarda los cambios
+
+### Despliegue automático
+
+Una vez configurado, el sitio se desplegará automáticamente cuando:
+- Se haga push a la rama `main`
+- Se ejecute manualmente desde la pestaña **Actions** en GitHub
+
+### URL de acceso
+
+Después del primer despliegue exitoso, tu aplicación estará disponible en:
+```
+https://[tu-usuario].github.io/[nombre-repositorio]
+```
+
+### Verificar el despliegue
+
+1. Ve a la pestaña **Actions** en tu repositorio
+2. Verifica que el workflow "Deploy en GitHub Pages" se haya ejecutado correctamente
+3. Una vez completado, accede a la URL de GitHub Pages
 
 ## 📄 Licencia
 
