@@ -16,6 +16,9 @@
                     <span class="amount" id="totalAmount">$0.00</span>
                 </div>
             </div>
+            <div class="header-actions">
+                <button id="manageCreditCards" class="btn-header">💳 Gestionar Tarjetas</button>
+            </div>
         </header>
 
         <main>
@@ -75,6 +78,27 @@
                         </div>
                     </div>
 
+                    <div class="form-row">
+                        <div class="form-group form-group-card">
+                            <label for="creditCard">Tarjeta</label>
+                            <select id="creditCard" name="creditCard">
+                                <option value="">Sin tarjeta</option>
+                            </select>
+                        </div>
+                        <div class="form-group form-group-installments">
+                            <label for="installments">Cuotas</label>
+                            <input 
+                                type="number" 
+                                id="installments" 
+                                name="installments" 
+                                min="1" 
+                                max="60"
+                                value="1"
+                                placeholder="1"
+                            >
+                        </div>
+                    </div>
+
                     <button type="submit" class="btn-primary">
                         <span class="btn-text">Agregar Gasto</span>
                         <span class="btn-shortcut">Enter ↵</span>
@@ -97,6 +121,10 @@
                     <button class="filter-tab" data-filter="month">Este Mes</button>
                 </div>
 
+                <div class="card-filter-tabs" id="cardFilterTabs" style="display: none;">
+                    <button class="card-filter-tab active" data-card="all">Todos</button>
+                </div>
+
                 <div id="expensesList" class="expenses-container">
                     <div class="empty-state">
                         <p>📝 No hay gastos registrados</p>
@@ -109,6 +137,57 @@
         <footer>
             <p>Los datos se guardan localmente en tu navegador</p>
         </footer>
+    </div>
+
+    <!-- Modal de Tarjetas de Crédito -->
+    <div id="creditCardsModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>💳 Gestión de Tarjetas de Crédito</h2>
+                <button class="modal-close" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="creditCardForm">
+                    <div class="form-group">
+                        <label for="cardName">Nombre de la Tarjeta</label>
+                        <input 
+                            type="text" 
+                            id="cardName" 
+                            name="cardName" 
+                            placeholder="Ej: Visa Gold, Mastercard..." 
+                            required
+                            maxlength="50"
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label for="closingDay">Día de Cierre (1-31)</label>
+                        <input 
+                            type="number" 
+                            id="closingDay" 
+                            name="closingDay" 
+                            min="1" 
+                            max="31"
+                            placeholder="10"
+                            required
+                        >
+                    </div>
+                    <div class="form-group-checkbox">
+                        <input 
+                            type="checkbox" 
+                            id="isDefault" 
+                            name="isDefault"
+                        >
+                        <label for="isDefault">Establecer como tarjeta por defecto</label>
+                    </div>
+                    <button type="submit" class="btn-primary">Agregar Tarjeta</button>
+                </form>
+
+                <div class="cards-list" id="cardsList">
+                    <h3>Tarjetas Registradas</h3>
+                    <div id="cardsContainer"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="app.js"></script>
