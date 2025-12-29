@@ -1,0 +1,29 @@
+{
+  "name": "Control de Gastos",
+  "description": "Aplicación web para control de gastos personales con tarjetas de crédito y cuotas",
+  "preview": {
+    "command": "npx serve -s . -p 3000 --cors",
+    "port": 3000,
+    "directory": ".",
+    "file": "index.html",
+    "autoStart": true,
+    "watchFiles": [
+      "index.html",
+      "styles.css",
+      "app.js"
+    ]
+  },
+  "tasks": {
+    "dev": {
+      "command": "npx serve -s . -p 3000 --cors",
+      "description": "Inicia servidor de desarrollo con live preview"
+    },
+    "preview": {
+      "command": "python3 -m http.server 3000",
+      "description": "Servidor HTTP alternativo con Python (sin dependencias npm)"
+    }
+  },
+  "env": {
+    "NODE_ENV": "development"
+  }
+}
