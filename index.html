@@ -8,30 +8,6 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- Sidebar para Escritorio -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <span class="logo">💰 Gastos</span>
-                <button id="toggleSidebar" class="btn-toggle">
-                    <span class="icon">◀</span>
-                </button>
-            </div>
-            <nav class="nav-menu">
-                <button class="nav-item active" data-section="section-form">
-                    <span class="icon">➕</span>
-                    <span class="label">Cargar Gasto</span>
-                </button>
-                <button class="nav-item" data-section="section-list">
-                    <span class="icon">📋</span>
-                    <span class="label">Ver Gastos</span>
-                </button>
-                <button class="nav-item" data-section="section-cards">
-                    <span class="icon">💳</span>
-                    <span class="label">Tarjetas</span>
-                </button>
-            </nav>
-        </aside>
-
         <!-- Contenido Principal -->
         <div class="main-wrapper">
             <header>
@@ -43,6 +19,22 @@
                             <span class="amount" id="totalAmount">$0.00</span>
                         </div>
                     </div>
+
+                    <!-- Navbar superior (visible en todas las resoluciones) -->
+                    <nav class="top-nav" aria-label="Secciones">
+                        <button class="nav-item active" data-section="section-form" type="button">
+                            <span class="icon">➕</span>
+                            <span class="label">Cargar</span>
+                        </button>
+                        <button class="nav-item" data-section="section-list" type="button">
+                            <span class="icon">📋</span>
+                            <span class="label">Gastos</span>
+                        </button>
+                        <button class="nav-item" data-section="section-cards" type="button">
+                            <span class="icon">💳</span>
+                            <span class="label">Tarjetas</span>
+                        </button>
+                    </nav>
                 </div>
             </header>
 
@@ -216,22 +208,6 @@
                 <p>Los datos se guardan localmente en tu navegador</p>
             </footer>
         </div>
-
-        <!-- Barra inferior para Mobile -->
-        <nav class="bottom-nav">
-            <button class="nav-item active" data-section="section-form">
-                <span class="icon">➕</span>
-                <span class="label">Cargar</span>
-            </button>
-            <button class="nav-item" data-section="section-list">
-                <span class="icon">📋</span>
-                <span class="label">Gastos</span>
-            </button>
-            <button class="nav-item" data-section="section-cards">
-                <span class="icon">💳</span>
-                <span class="label">Tarjetas</span>
-            </button>
-        </nav>
     </div>
 
     <script src="app.js"></script>

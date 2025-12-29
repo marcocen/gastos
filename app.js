@@ -8,12 +8,11 @@ class ExpenseTracker {
         this.attachEventListeners();
         this.setDefaultDate();
         this.updateCreditCardSelect();
+        this.ensureInitialSection();
         this.render();
     }
 
     initializeElements() {
-        this.appContainer = document.querySelector('.app-container');
-        this.toggleSidebarBtn = document.getElementById('toggleSidebar');
         this.navItems = document.querySelectorAll('.nav-item');
         this.sections = document.querySelectorAll('.app-section');
 
@@ -38,30 +37,42 @@ class ExpenseTracker {
     }
 
     attachEventListeners() {
-        this.form.addEventListener('submit', (e) => this.handleSubmit(e));
-        this.clearAllButton.addEventListener('click', () => this.clearAll());
-        
-        this.filterTabs.forEach(tab => {
-            tab.addEventListener('click', (e) => this.handleFilterChange(e));
-        });
+        if (this.form) {
+            this.form.addEventListener('submit', (e) => this.handleSubmit(e));
+        }
 
-        this.creditCardForm.addEventListener('submit', (e) => this.handleCreditCardSubmit(e));
+        if (this.clearAllButton) {
+            this.clearAllButton.addEventListener('click', () => this.clearAll());
+        }
 
-        // Sidebar toggle
-        this.toggleSidebarBtn.addEventListener('click', () => {
-            this.appContainer.classList.toggle('sidebar-collapsed');
-        });
+        if (this.filterTabs && this.filterTabs.length > 0) {
+            this.filterTabs.forEach(tab => {
+                tab.addEventListener('click', (e) => this.handleFilterChange(e));
+            });
+        }
+
+        if (this.creditCardForm) {
+            this.creditCardForm.addEventListener('submit', (e) => this.handleCreditCardSubmit(e));
+        }
 
         // Navigation
-        this.navItems.forEach(item => {
-            item.addEventListener('click', () => {
-                const sectionId = item.getAttribute('data-section');
-                this.switchSection(sectionId);
+        if (this.navItems && this.navItems.length > 0) {
+            this.navItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    const sectionId = e.currentTarget.getAttribute('data-section');
+                    if (!sectionId) return;
+                    this.switchSection(sectionId);
+                });
             });
-        });
+        }
     }
 
     switchSection(sectionId) {
+        if (!sectionId) return;
+
+        const sectionExists = Array.from(this.sections || []).some(section => section.id === sectionId);
+        if (!sectionExists) return;
+
         // Update Nav
         this.navItems.forEach(item => {
             if (item.getAttribute('data-section') === sectionId) {
@@ -73,25 +84,37 @@ class ExpenseTracker {
 
         // Update Sections
         this.sections.forEach(section => {
-            if (section.id === sectionId) {
-                section.classList.add('active');
-            } else {
-                section.classList.remove('active');
-            }
+            const isActive = section.id === sectionId;
+            section.classList.toggle('active', isActive);
+            section.hidden = !isActive;
         });
+
+        // Persist section in URL (permite compartir/recargar sin perder la vista)
+        if (window.location.hash !== `#${sectionId}`) {
+            history.replaceState(null, '', `#${sectionId}`);
+        }
 
         // Specific section logic
         if (sectionId === 'section-cards') {
             this.renderCreditCards();
         }
-        
+
         if (sectionId === 'section-list') {
             this.renderExpenses();
         }
-        
-        if (sectionId === 'section-form') {
+
+        if (sectionId === 'section-form' && this.amountInput) {
             this.amountInput.focus();
         }
+    }
+
+    ensureInitialSection() {
+        const hash = window.location.hash ? window.location.hash.replace('#', '') : '';
+        const fromHash = hash && document.getElementById(hash) ? hash : null;
+        const activeSection = document.querySelector('.app-section.active');
+
+        const initialSectionId = fromHash || (activeSection ? activeSection.id : 'section-form');
+        this.switchSection(initialSectionId);
     }
 
     setDefaultDate() {

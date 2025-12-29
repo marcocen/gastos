@@ -14,9 +14,6 @@
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
     --radius: 12px;
     --radius-sm: 8px;
-    --sidebar-width: 260px;
-    --sidebar-collapsed-width: 80px;
-    --bottom-nav-height: 70px;
 }
 
 * {
@@ -45,95 +42,13 @@ body {
     display: flex;
     flex-direction: column;
     width: 100%;
-    padding-bottom: var(--bottom-nav-height); /* Espacio para mobile nav */
 }
 
-@media (min-width: 1024px) {
-    .main-wrapper {
-        padding-bottom: 0;
-        margin-left: var(--sidebar-width);
-        transition: margin-left 0.3s ease;
-    }
-
-    .app-container.sidebar-collapsed .main-wrapper {
-        margin-left: var(--sidebar-collapsed-width);
-    }
-}
-
-/* Sidebar */
-.sidebar {
-    display: none; /* Oculto en mobile */
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100vh;
-    width: var(--sidebar-width);
-    background: var(--surface);
-    border-right: 1px solid var(--border-color);
-    flex-direction: column;
-    z-index: 100;
-    transition: width 0.3s ease;
-}
-
-@media (min-width: 1024px) {
-    .sidebar {
-        display: flex;
-    }
-
-    .app-container.sidebar-collapsed .sidebar {
-        width: var(--sidebar-collapsed-width);
-    }
-}
-
-.sidebar-header {
-    padding: 1.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.logo {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    white-space: nowrap;
-    overflow: hidden;
-}
-
-.app-container.sidebar-collapsed .logo {
-    display: none;
-}
-
-.btn-toggle {
-    background: var(--background);
-    border: none;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-secondary);
-    transition: transform 0.3s ease;
-}
-
-.app-container.sidebar-collapsed .btn-toggle {
-    transform: rotate(180deg);
-}
-
-.nav-menu {
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
+/* Nav Items - Estilos compartidos para botones de navegación */
 .nav-item {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.5rem;
     padding: 0.75rem 1rem;
     border: none;
     background: transparent;
@@ -141,8 +56,6 @@ body {
     color: var(--text-secondary);
     cursor: pointer;
     transition: all 0.2s;
-    width: 100%;
-    text-align: left;
     font-size: 1rem;
     font-weight: 500;
 }
@@ -157,51 +70,7 @@ body {
     color: white;
 }
 
-.app-container.sidebar-collapsed .nav-item {
-    justify-content: center;
-    padding: 0.75rem;
-}
-
-.app-container.sidebar-collapsed .nav-item .label {
-    display: none;
-}
-
-.app-container.sidebar-collapsed .nav-item .icon {
-    font-size: 1.25rem;
-}
-
-/* Bottom Nav (Mobile) */
-.bottom-nav {
-    display: flex;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: var(--bottom-nav-height);
-    background: var(--surface);
-    border-top: 1px solid var(--border-color);
-    justify-content: space-around;
-    align-items: center;
-    padding: 0.5rem;
-    z-index: 100;
-}
-
-@media (min-width: 1024px) {
-    .bottom-nav {
-        display: none;
-    }
-}
-
-.bottom-nav .nav-item {
-    flex-direction: column;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.5rem;
-    width: auto;
-    font-size: 0.75rem;
-}
-
-.bottom-nav .nav-item .icon {
+.nav-item .icon {
     font-size: 1.25rem;
 }
 
@@ -254,6 +123,40 @@ header h1 {
 .total-card .amount {
     font-size: 1.75rem;
     font-weight: 700;
+}
+
+/* Top Nav */
+.top-nav {
+    display: flex;
+    gap: 0.75rem;
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.top-nav .nav-item {
+    width: auto;
+    justify-content: center;
+    text-align: center;
+    border: 2px solid var(--border-color);
+    padding: 0.5rem 0.75rem;
+}
+
+.top-nav .nav-item.active {
+    border-color: var(--primary-color);
+}
+
+@media (min-width: 640px) {
+    .top-nav {
+        gap: 1rem;
+    }
+}
+
+/* Main Content */
+main {
+    flex: 1;
+    padding: 0;
+    min-height: 50vh;
 }
 
 /* App Sections */
@@ -581,5 +484,5 @@ footer {
         --text-secondary: #94a3b8;
         --border-color: #334155;
     }
-    .expense-icon, .expense-item, .card-item, .btn-toggle { background: #0f172a; }
+    .expense-icon, .expense-item, .card-item { background: #0f172a; }
 }
