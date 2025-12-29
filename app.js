@@ -12,6 +12,11 @@ class ExpenseTracker {
     }
 
     initializeElements() {
+        this.appContainer = document.querySelector('.app-container');
+        this.toggleSidebarBtn = document.getElementById('toggleSidebar');
+        this.navItems = document.querySelectorAll('.nav-item');
+        this.sections = document.querySelectorAll('.app-section');
+
         this.form = document.getElementById('expenseForm');
         this.amountInput = document.getElementById('amount');
         this.categorySelect = document.getElementById('category');
@@ -24,9 +29,7 @@ class ExpenseTracker {
         this.clearAllButton = document.getElementById('clearAll');
         this.filterTabs = document.querySelectorAll('.filter-tab');
         this.cardFilterTabs = document.getElementById('cardFilterTabs');
-        this.manageCreditCardsButton = document.getElementById('manageCreditCards');
-        this.creditCardsModal = document.getElementById('creditCardsModal');
-        this.closeModalButton = document.getElementById('closeModal');
+        
         this.creditCardForm = document.getElementById('creditCardForm');
         this.cardsContainer = document.getElementById('cardsContainer');
         this.cardNameInput = document.getElementById('cardName');
@@ -42,15 +45,53 @@ class ExpenseTracker {
             tab.addEventListener('click', (e) => this.handleFilterChange(e));
         });
 
-        this.manageCreditCardsButton.addEventListener('click', () => this.openCreditCardsModal());
-        this.closeModalButton.addEventListener('click', () => this.closeCreditCardsModal());
-        this.creditCardsModal.addEventListener('click', (e) => {
-            if (e.target === this.creditCardsModal) {
-                this.closeCreditCardsModal();
+        this.creditCardForm.addEventListener('submit', (e) => this.handleCreditCardSubmit(e));
+
+        // Sidebar toggle
+        this.toggleSidebarBtn.addEventListener('click', () => {
+            this.appContainer.classList.toggle('sidebar-collapsed');
+        });
+
+        // Navigation
+        this.navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const sectionId = item.getAttribute('data-section');
+                this.switchSection(sectionId);
+            });
+        });
+    }
+
+    switchSection(sectionId) {
+        // Update Nav
+        this.navItems.forEach(item => {
+            if (item.getAttribute('data-section') === sectionId) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
             }
         });
 
-        this.creditCardForm.addEventListener('submit', (e) => this.handleCreditCardSubmit(e));
+        // Update Sections
+        this.sections.forEach(section => {
+            if (section.id === sectionId) {
+                section.classList.add('active');
+            } else {
+                section.classList.remove('active');
+            }
+        });
+
+        // Specific section logic
+        if (sectionId === 'section-cards') {
+            this.renderCreditCards();
+        }
+        
+        if (sectionId === 'section-list') {
+            this.renderExpenses();
+        }
+        
+        if (sectionId === 'section-form') {
+            this.amountInput.focus();
+        }
     }
 
     setDefaultDate() {
@@ -92,6 +133,10 @@ class ExpenseTracker {
         this.saveExpenses();
         this.render();
         this.resetForm();
+        
+        // After adding expense, maybe stay here or go to list? 
+        // User didn't specify, but stay in form is common for multiple entries.
+        alert('Gasto agregado con éxito');
     }
 
     createInstallmentExpenses(totalAmount, category, description, date, cardId, totalInstallments) {
@@ -231,8 +276,13 @@ class ExpenseTracker {
     }
 
     calculateTotal() {
-        const filtered = this.getFilteredExpenses();
-        return filtered.reduce((sum, expense) => sum + expense.amount, 0);
+        // Calculate total only for this month as per UI request
+        const now = new Date();
+        const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        
+        return this.expenses
+            .filter(expense => new Date(expense.date) >= thisMonthStart)
+            .reduce((sum, expense) => sum + expense.amount, 0);
     }
 
     formatCurrency(amount) {
@@ -291,6 +341,8 @@ class ExpenseTracker {
     }
 
     renderCardFilters() {
+        if (!this.cardFilterTabs) return;
+
         if (this.creditCards.length === 0) {
             this.cardFilterTabs.style.display = 'none';
             return;
@@ -307,7 +359,7 @@ class ExpenseTracker {
 
         this.cardFilterTabs.innerHTML = html;
 
-        const cardTabs = document.querySelectorAll('.card-filter-tab');
+        const cardTabs = this.cardFilterTabs.querySelectorAll('.card-filter-tab');
         cardTabs.forEach(tab => {
             tab.addEventListener('click', (e) => this.handleCardFilterChange(e));
         });
@@ -320,6 +372,8 @@ class ExpenseTracker {
     }
 
     renderExpenses() {
+        if (!this.expensesList) return;
+        
         const filtered = this.getFilteredExpenses();
 
         if (filtered.length === 0) {
@@ -328,7 +382,7 @@ class ExpenseTracker {
                     <p>📝 No hay gastos registrados</p>
                     <p class="empty-state-hint">
                         ${this.currentFilter === 'all' 
-                            ? 'Agrega tu primer gasto arriba' 
+                            ? 'Agrega tu primer gasto' 
                             : 'No hay gastos en este período'}
                     </p>
                 </div>
@@ -414,16 +468,6 @@ class ExpenseTracker {
         }
     }
 
-    openCreditCardsModal() {
-        this.creditCardsModal.style.display = 'flex';
-        this.renderCreditCards();
-    }
-
-    closeCreditCardsModal() {
-        this.creditCardsModal.style.display = 'none';
-        this.creditCardForm.reset();
-    }
-
     handleCreditCardSubmit(e) {
         e.preventDefault();
 
@@ -456,6 +500,8 @@ class ExpenseTracker {
     }
 
     renderCreditCards() {
+        if (!this.cardsContainer) return;
+
         if (this.creditCards.length === 0) {
             this.cardsContainer.innerHTML = '<p class="empty-cards">No hay tarjetas registradas</p>';
             return;
@@ -479,6 +525,8 @@ class ExpenseTracker {
     }
 
     updateCreditCardSelect() {
+        if (!this.creditCardSelect) return;
+        
         const selectedValue = this.creditCardSelect.value;
         
         let html = '<option value="">Sin tarjeta</option>';
@@ -523,17 +571,21 @@ if (document.readyState === 'loading') {
 
 // Keyboard shortcuts for desktop
 document.addEventListener('keydown', (e) => {
+    // Alt/Option + 1, 2, 3: Switch sections
+    if ((e.altKey || e.metaKey) && (e.key === '1' || e.key === '2' || e.key === '3')) {
+        e.preventDefault();
+        const sectionMap = {
+            '1': 'section-form',
+            '2': 'section-list',
+            '3': 'section-cards'
+        };
+        tracker.switchSection(sectionMap[e.key]);
+    }
+
     // Alt/Option + N: Focus on amount input (new expense)
     if ((e.altKey || e.metaKey) && e.key === 'n') {
         e.preventDefault();
+        tracker.switchSection('section-form');
         document.getElementById('amount').focus();
-    }
-
-    // Escape: Close modal
-    if (e.key === 'Escape') {
-        const modal = document.getElementById('creditCardsModal');
-        if (modal && modal.style.display === 'flex') {
-            tracker.closeCreditCardsModal();
-        }
     }
 });
